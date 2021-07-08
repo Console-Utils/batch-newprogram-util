@@ -75,7 +75,8 @@ set /a "i=0"
 		echo %em_wrong_option%
 		exit /b %ec_wrong_option%
 	)
-	
+
+call :new_csharp_program "test.cs" "%options%"
 exit /b %ec_success%
 
 :init
@@ -173,13 +174,13 @@ exit /b %ec_success%
 	echo         for ^(var i = 0; i ^< args.Length; i++^)>> "%gcb_file_name%"
 	echo         {>> "%gcb_file_name%"
 	echo             string option = args[i];>> "%gcb_file_name%"
-	echo             string value = args?[i + 1] ?? string.Empty;>> "%gcb_file_name%"
+	echo             string value = i + 1 ^< args.Length ? args[i + 1] : string.Empty;>> "%gcb_file_name%"
 	echo.>> "%gcb_file_name%"
 	echo             switch ^(option^)>> "%gcb_file_name%"
 	echo             {>> "%gcb_file_name%"
 
 	for %%s in (%gcb_options%) do (
-		echo %%s| sed -r -f tocase.sed >> "%gcb_file_name%"
+		echo                 case "%%s": >> "%gcb_file_name%"
 		echo %%s| sed -r "s/[[:punct:]]//g; s/(.)(.*)/                    \u\1\2();/" >> "%gcb_file_name%"
 		echo                     break;>> "%gcb_file_name%"
 	)
@@ -192,11 +193,32 @@ exit /b %ec_success%
 	echo     }>> "%gcb_file_name%"
 	echo.>> "%gcb_file_name%"
 	
-	for %%s in (%gcb_options%) do (
-		echo %%s| sed -r "s/[[:punct:]]//g; s/(.)(.*)/    private static void \u\1\2()/" >> "%gcb_file_name%"
-		echo     {>> "%gcb_file_name%"
-		echo     }>> "%gcb_file_name%"
-	)
+	call :generate_csharp_option_handlers "%gcb_file_name%" %options%
 	
 	echo }>> "%gcb_file_name%"
 exit /b %ec_success%
+
+:generate_csharp_option_handlers
+	set "gsoh_file_name=%~1"
+	shift
+	
+	:gsoh_while_option_defined
+		set "gsoh_option=%~1"
+		set "gsoh_next_option=%~2"
+		
+		if defined gsoh_option (
+			echo %gsoh_option%| sed -r "s/[[:punct:]]//g; s/(.)(.*)/    private static void \u\1\2()/" >> "%gsoh_file_name%"
+			echo     {>> "%gsoh_file_name%"
+			echo     }>> "%gsoh_file_name%"
+		) else (
+			exit /b %ec_success%
+		)
+		
+		if defined gsoh_next_option (
+			echo.>> "%gsoh_file_name%"
+		)
+		
+		shift
+		goto gsoh_while_option_defined
+exit /b %ec_success%
+
