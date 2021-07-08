@@ -23,7 +23,7 @@ newprogram [options]
 - `-h`|`--help` - writes help and exits
 - `-v`|`--version` - writes version and exits
 - `-l`|`--language` - specifies language name [Available value set is: csharp, pascal.]
-- `-p`|`--path` - specifies program path
+- `-p`|`--path` - specifies program path (use `./` to specify current directory)
 - `-o`|`--options` - specifies program options with values via space
 
 ## Error codes
