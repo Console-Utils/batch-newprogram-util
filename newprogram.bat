@@ -46,7 +46,7 @@ set /a "i=0"
     if "%option%" == "--language" set /a "is_language=%true%"
 
     if "%is_language%" == "%true%" (
-        set /a "language=%value%"
+        set "language=%value%"
         set /a "i+=2"
         goto main_loop
     )
@@ -56,7 +56,7 @@ set /a "i=0"
     if "%option%" == "--path" set /a "is_path=%true%"
 
     if "%is_path%" == "%true%" (
-        set /a "program_path=%value%"
+        set "program_path=%value%"
         set /a "i+=2"
         goto main_loop
     )
@@ -76,26 +76,64 @@ set /a "i=0"
 		exit /b %ec_wrong_option%
 	)
 
+set /a "is_right_language=%false%"
+if "%language%" == "csharp" set /a "is_right_language=%true%"
+if "%language%" == "pascal" set /a "is_right_language=%true%"
+
+if "%is_right_language%" == "%false%" (
+	echo %em_wrong_language%
+	exit /b %ec_wrong_language%
+)
+
+echo %program_path%| sed "s/^.*\///" > "%temp_file%"
+set /p program_name=<%temp_file%
+
+echo %program_path%| sed -r "s/\/%program_name:.=\.%$//" > "%temp_file%"
+set /p program_path=<%temp_file%
+
+if not exist "%program_path%" (
+	del "%temp_file%"
+	echo %em_wrong_path%
+	exit /b %ec_wrong_path%
+)
+
+del "%temp_file%"
+cd "%program_path%"
+
+set /a "is_right_program_name=%true%"
+if "%program_name%" == "%temp_file%" set /a "is_right_program_name=%false%"
+if exist "%program_name%" set /a "is_right_program_name=%false%"
+
+if "%program_name%" == "%false%" (
+	echo %em_wrong_program_name%
+	exit /b %ec_wrong_program_name%
+)
+
+call :new_%language%_program "%program_name%" "%options%"
+if exist "%temp_file%" del "%temp_file%"
+
 exit /b %ec_success%
 
 :init
+	set "temp_file=tmp.txt"
+	
     set /a "ec_success=0"
     set /a "ec_wrong_option=2"
 	set /a "ec_wrong_language=2"
 	set /a "ec_wrong_path=2"
+	set /a "ec_wrong_program_name=2"
 
     set "em_wrong_option=Specified option is not supported."
 	set "em_wrong_language=Specified language name must be one of: csharp, pascal."
 	set "em_wrong_path=Specified path doesn't exist."
+	set "em_wrong_program_name=Specified program already exists or has invalid (%temp_file%) name."
 
     set /a "true=0"
     set /a "false=1"
 
     set "language="
-	set "program_path="
+	set "program_path=%CD%"
 	set "options="
-	
-	set "temp_file=tmp.txt"
 
 	set /a "is_wine=%false%"
 	if defined WINEDEBUG set /a "is_wine=%true%"
@@ -122,6 +160,7 @@ exit /b %ec_success%
 	echo    - 2 - Specified option is not supported.
     echo    - 2 - Specified language name must be one of: csharp, pascal.
 	echo    - 2 - Specified path doesn't exist.
+	echo    - 2 - Specified program already exists or has invalid (%temp_file%) name.
     echo.
     echo Examples:
     echo    - newprogram --help
@@ -170,6 +209,13 @@ exit /b %ec_success%
 	echo {>> "%gcb_file_name%"
 	echo     public static void Main^(string[] args^)>> "%gcb_file_name%"
 	echo     {>> "%gcb_file_name%"
+	
+	if not defined gcb_options (
+		echo     }>> "%gcb_file_name%"
+		echo }>> "%gcb_file_name%"
+		exit /b %ec_success%
+	)
+	
 	echo         for ^(var i = 0; i ^< args.Length; i++^)>> "%gcb_file_name%"
 	echo         {>> "%gcb_file_name%"
 	echo             string option = args[i];>> "%gcb_file_name%"
@@ -221,7 +267,6 @@ exit /b %ec_success%
 		goto gsoh_while_option_defined
 exit /b %ec_success%
 
-
 :new_pascal_program
 	set "npp_file_name=%~1"
 	set "npp_options=%~2"
@@ -241,6 +286,12 @@ exit /b %ec_success%
 :generate_pascal_body
 	set "gpb_file_name=%~1"
 	set "gpb_options=%~2"
+	
+	if not defined gpb_options (
+		echo begin>> "%gpb_file_name%"
+		echo end.>> "%gpb_file_name%"
+		exit /b %ec_success%
+	)
 	
 	echo.>> "%gpb_file_name%"
 	for %%s in (%gpb_options%) do (
