@@ -76,7 +76,6 @@ set /a "i=0"
 		exit /b %ec_wrong_option%
 	)
 
-call :new_csharp_program "test.cs" "%options%"
 exit /b %ec_success%
 
 :init
