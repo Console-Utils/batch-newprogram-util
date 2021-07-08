@@ -61,12 +61,22 @@ set /a "i=0"
         goto main_loop
     )
 
+    set /a "is_options=%false%"
+    if "%option%" == "-o" set /a "is_options=%true%"
+    if "%option%" == "--options" set /a "is_options=%true%"
+
+    if "%is_options%" == "%true%" (
+        set "options=%value%"
+        set /a "i+=2"
+        goto main_loop
+    )
+
 	if defined option (
 		echo %em_wrong_option%
 		exit /b %ec_wrong_option%
 	)
 	
-    exit /b %ec_success%
+exit /b %ec_success%
 
 :init
     set /a "ec_success=0"
@@ -83,6 +93,9 @@ set /a "i=0"
 
     set "language="
 	set "program_path="
+	set "options="
+	
+	set "temp_file=tmp.txt"
 
 	set /a "is_wine=%false%"
 	if defined WINEDEBUG set /a "is_wine=%true%"
@@ -102,6 +115,7 @@ exit /b %ec_success%
     echo    -v^|--version - writes version and exits
     echo    -l^|--language - specifies language name [Available value set is: csharp, pascal.]
     echo    -p^|--path - specifies program path
+	echo    -o^|--options - specifies program options with values via space
     echo.
     echo Error codes:
     echo    - 0 - Success
@@ -111,7 +125,7 @@ exit /b %ec_success%
     echo.
     echo Examples:
     echo    - newprogram --help
-    echo    - newprogram --language csharp --path "path/to/program"
+    echo    - newprogram --language csharp --path "path/to/program" --options "--help --version"
 exit /b %ec_success%
 
 :version
@@ -129,4 +143,60 @@ exit /b %ec_success%
             set /a "ca_i+=1"
             goto ca_clear_arguments_loop
         )
+exit /b %ec_success%
+
+:new_csharp_program
+	set "ncp_file_name=%~1"
+	set "ncp_options=%~2"
+	
+	call :generate_csharp_usings "%ncp_file_name%"
+	call :generate_csharp_body "%ncp_file_name%" "%ncp_options%"
+exit /b %ec_success%
+
+:generate_csharp_usings
+	set "gcu_file_name=%~1"
+	
+	echo using System;> "%gcu_file_name%"
+	echo using System.Linq;>> "%gcu_file_name%"
+	echo using System.Collections.Generic;>> "%gcu_file_name%"
+exit /b %ec_success%
+
+:generate_csharp_body
+	set "gcb_file_name=%~1"
+	set "gcb_options=%~2"
+	
+	echo.>> "%gcb_file_name%"
+	echo internal class Program>> "%gcb_file_name%"
+	echo {>> "%gcb_file_name%"
+	echo     public static void Main^(string[] args^)>> "%gcb_file_name%"
+	echo     {>> "%gcb_file_name%"
+	echo         for ^(var i = 0; i ^< args.Length; i++^)>> "%gcb_file_name%"
+	echo         {>> "%gcb_file_name%"
+	echo             string option = args[i];>> "%gcb_file_name%"
+	echo             string value = args?[i + 1] ?? string.Empty;>> "%gcb_file_name%"
+	echo.>> "%gcb_file_name%"
+	echo             switch ^(option^)>> "%gcb_file_name%"
+	echo             {>> "%gcb_file_name%"
+
+	for %%s in (%gcb_options%) do (
+		echo %%s| sed -r -f tocase.sed >> "%gcb_file_name%"
+		echo %%s| sed -r "s/[[:punct:]]//g; s/(.)(.*)/                    \u\1\2();/" >> "%gcb_file_name%"
+		echo                     break;>> "%gcb_file_name%"
+	)
+	
+	echo                 default:>> "%gcb_file_name%"
+	echo                     Console.Error.WriteLine^($"Option {option} is unsupported now."^);>> "%gcb_file_name%"
+	echo                     break;>> "%gcb_file_name%"
+	echo             }>> "%gcb_file_name%"
+	echo         }>> "%gcb_file_name%"	
+	echo     }>> "%gcb_file_name%"
+	echo.>> "%gcb_file_name%"
+	
+	for %%s in (%gcb_options%) do (
+		echo %%s| sed -r "s/[[:punct:]]//g; s/(.)(.*)/    private static void \u\1\2()/" >> "%gcb_file_name%"
+		echo     {>> "%gcb_file_name%"
+		echo     }>> "%gcb_file_name%"
+	)
+	
+	echo }>> "%gcb_file_name%"
 exit /b %ec_success%

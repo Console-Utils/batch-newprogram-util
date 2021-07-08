@@ -24,6 +24,7 @@ newprogram [options]
 - `-v`|`--version` - writes version and exits
 - `-l`|`--language` - specifies language name [Available value set is: csharp, pascal.]
 - `-p`|`--path` - specifies program path
+- `-o`|`--options` - specifies program options with values via space
 
 ## Error codes
 
@@ -39,5 +40,5 @@ newprogram --help
 ```
 
 ```bat
-newprogram --language csharp
+newprogram --language csharp --path "path/to/program" --options "--help --version"
 ```
