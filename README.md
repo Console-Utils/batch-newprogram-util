@@ -28,7 +28,9 @@ newprogram [options]
 ## Error codes
 
 - `0` - Success
-- `2` - Unexpected language name. Valid language name set is: csharp, pascal.
+- `2` - Specified option is not supported.
+- `2` - Specified language name must be one of: csharp, pascal.
+- `2` - Specified path doesn't exist.
 
 ## Examples
 
