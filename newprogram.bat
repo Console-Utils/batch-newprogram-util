@@ -221,3 +221,53 @@ exit /b %ec_success%
 		goto gsoh_while_option_defined
 exit /b %ec_success%
 
+
+:new_pascal_program
+	set "npp_file_name=%~1"
+	set "npp_options=%~2"
+	
+	call :generate_pascal_usings "%npp_file_name%"
+	call :generate_pascal_body "%npp_file_name%" "%npp_options%"
+exit /b %ec_success%
+
+:generate_pascal_usings
+	set "gpu_file_name=%~1"
+	
+	echo uses System;> "%gpu_file_name%"
+	echo uses System.Linq;>> "%gpu_file_name%"
+	echo uses System.Collections.Generic;>> "%gpu_file_name%"
+exit /b %ec_success%
+
+:generate_pascal_body
+	set "gpb_file_name=%~1"
+	set "gpb_options=%~2"
+	
+	echo.>> "%gpb_file_name%"
+	for %%s in (%gpb_options%) do (
+		echo %%s| sed -r "s/[[:punct:]]//g; s/(.)(.*)/procedure \u\1\2();/" >> "%gpb_file_name%"
+		echo begin>> "%gpb_file_name%"
+		echo end;>> "%gpb_file_name%"
+		echo.>> "%gpb_file_name%"
+	)
+	
+	echo begin>> "%gpb_file_name%"
+	echo     for var i := 0 to ParamCount^(^) - 1 do>> "%gpb_file_name%"
+	echo     begin>> "%gpb_file_name%"
+	echo         var option = args[i];>> "%gpb_file_name%"
+	echo         var value = i + 1 ^< args.Length ? args[i + 1] : string.Empty;>> "%gpb_file_name%"
+	echo.>> "%gpb_file_name%"
+	echo         case option of>> "%gpb_file_name%"
+
+	for %%s in (%gpb_options%) do (
+		echo             "%%s:" >> "%gpb_file_name%"
+		echo             begin >> "%gpb_file_name%"
+		echo %%s| sed -r "s/[[:punct:]]//g; s/(.)(.*)/                \u\1\2();/" >> "%gpb_file_name%"
+		echo             end; >> "%gpb_file_name%"
+	)
+	
+	echo             else:>> "%gpb_file_name%"
+	echo                 Console.Error.WriteLine^($"Option {option} is unsupported now."^);>> "%gpb_file_name%"
+	echo         end;>> "%gpb_file_name%"	
+	echo     end;>> "%gpb_file_name%"
+	echo end.>> "%gpb_file_name%"
+exit /b %ec_success%
