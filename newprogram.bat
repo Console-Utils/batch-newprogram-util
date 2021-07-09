@@ -75,6 +75,10 @@ set /a "i=0"
 		echo %em_wrong_option%
 		exit /b %ec_wrong_option%
 	)
+	
+	if defined options (
+		set "options=%options: =%"
+	)
 
 set /a "is_right_language=%false%"
 if "%language%" == "csharp" set /a "is_right_language=%true%"
@@ -104,7 +108,7 @@ set /a "is_right_program_name=%true%"
 if "%program_name%" == "%temp_file%" set /a "is_right_program_name=%false%"
 if exist "%program_name%" set /a "is_right_program_name=%false%"
 
-if "%program_name%" == "%false%" (
+if "%is_right_program_name%" == "%false%" (
 	echo %em_wrong_program_name%
 	exit /b %ec_wrong_program_name%
 )
@@ -126,7 +130,7 @@ exit /b %ec_success%
     set "em_wrong_option=Specified option is not supported."
 	set "em_wrong_language=Specified language name must be one of: csharp, pascal."
 	set "em_wrong_path=Specified path doesn't exist."
-	set "em_wrong_program_name=Specified program already exists or has invalid (%temp_file%) name."
+	set "em_wrong_program_name=Specified program already exists or has invalid ^(%temp_file%^) name."
 
     set /a "true=0"
     set /a "false=1"
@@ -168,7 +172,7 @@ exit /b %ec_success%
 exit /b %ec_success%
 
 :version
-    echo 1.0.0 ^(c^) 2021 year
+    echo 1.0.12 ^(c^) 2021 year
 exit /b %ec_success%
 
 :clear_arguments
@@ -287,13 +291,14 @@ exit /b %ec_success%
 	set "gpb_file_name=%~1"
 	set "gpb_options=%~2"
 	
+	echo.>> "%gpb_file_name%"
+	
 	if not defined gpb_options (
 		echo begin>> "%gpb_file_name%"
 		echo end.>> "%gpb_file_name%"
 		exit /b %ec_success%
 	)
 	
-	echo.>> "%gpb_file_name%"
 	for %%s in (%gpb_options%) do (
 		echo %%s| sed -r "s/[[:punct:]]//g; s/(.)(.*)/procedure \u\1\2();/" >> "%gpb_file_name%"
 		echo begin>> "%gpb_file_name%"
