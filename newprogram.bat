@@ -76,8 +76,9 @@ set /a "i=0"
 		exit /b %ec_wrong_option%
 	)
 	
-	if defined options (
-		set "options=%options: =%"
+	if defined options set "options_copy=%options: =%"
+	if not defined options_copy (
+		set "options=%options_copy%"
 	)
 
 set /a "is_right_language=%false%"
@@ -172,7 +173,7 @@ exit /b %ec_success%
 exit /b %ec_success%
 
 :version
-    echo 1.0.12 ^(c^) 2021 year
+    echo 1.1 ^(c^) 2021 year
 exit /b %ec_success%
 
 :clear_arguments
