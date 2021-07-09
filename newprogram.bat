@@ -173,7 +173,7 @@ exit /b %ec_success%
 exit /b %ec_success%
 
 :version
-    echo 1.1 ^(c^) 2021 year
+    echo 1.1.1 ^(c^) 2021 year
 exit /b %ec_success%
 
 :clear_arguments
@@ -316,7 +316,7 @@ exit /b %ec_success%
 	echo         case option of>> "%gpb_file_name%"
 
 	for %%s in (%gpb_options%) do (
-		echo             "%%s:" >> "%gpb_file_name%"
+		echo             "%%s": >> "%gpb_file_name%"
 		echo             begin >> "%gpb_file_name%"
 		echo %%s| sed -r "s/[[:punct:]]//g; s/(.)(.*)/                \u\1\2();/" >> "%gpb_file_name%"
 		echo             end; >> "%gpb_file_name%"
