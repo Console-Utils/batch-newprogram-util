@@ -6,11 +6,8 @@ Simple program generator for C# and PascalABC.NET.
 
 ## Requirements
 
-Supported environments: Windows 10 and Wine 5.0.
-
-Command line utils pre-installed:
-
-- [sed](http://gnuwin32.sourceforge.net/packages/sed.htm)
+- Only in Wine:
+    - `sed 4.2.1`
 
 ## Syntax
 
@@ -26,7 +23,7 @@ newprogram [options]
 - `-p`|`--path` - specifies program path (use `./` to specify current directory)
 - `-o`|`--options` - specifies program options with values via space
 
-## Error codes
+## Return codes
 
 - `0` - Success
 - `2` - Specified option is not supported.
