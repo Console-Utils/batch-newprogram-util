@@ -1,8 +1,8 @@
-# newprogram
+# .NET program generator
 
 ## Description
 
-Simple program generator for C# and PascalABC.NET.
+Tool to create simple C# or PascalABC.NET program.
 
 ## Requirements
 
