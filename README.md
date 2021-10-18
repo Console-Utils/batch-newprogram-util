@@ -2,6 +2,8 @@
 
 ## Description
 
+> ⚠️ This project is no longer maintained.
+
 Tool to create simple C# or PascalABC.NET program.
 
 ## Requirements
